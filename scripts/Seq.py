@@ -13,9 +13,21 @@ def download_assembly_sequences(accession_list):
     for assembly_id in accession_list:
         print(f"--- Processing Assembly: {assembly_id} ---")
         try:
-            # 1. Get the Assembly Summary to find the FTP link
-            handle = Entrez.esummary(db="assembly", id=assembly_id, report="full")
-            record = Entrez.read(handle)
+            # 1. Search to get the internal Assembly UID
+            # esummary requires an internal integer ID (UID), not the string Accession (GCF_...)
+            search_handle = Entrez.esearch(db="assembly", term=assembly_id)
+            search_record = Entrez.read(search_handle)
+            search_handle.close()
+
+            if not search_record['IdList']:
+                print(f"No results found for {assembly_id}")
+                continue
+
+            assembly_uid = search_record['IdList'][0]
+
+            # 2. Get the Assembly Summary using the UID
+            handle = Entrez.esummary(db="assembly", id=assembly_uid, report="full")
+            record = Entrez.read(handle, validate=False)
             handle.close()
 
             if not record['DocumentSummarySet']['DocumentSummary']:
@@ -30,6 +42,9 @@ def download_assembly_sequences(accession_list):
                 print(f"No FTP path found for {assembly_id}")
                 continue
 
+            # Switch to HTTPS for better reliability
+            ftp_url = ftp_url.replace("ftp://", "https://")
+
             # Construct the filename for the genomic FASTA
             # Format usually: [FTP_URL]/[Assembly_Name]_genomic.fna.gz
             assembly_name = ftp_url.split('/')[-1]
@@ -40,9 +55,18 @@ def download_assembly_sequences(accession_list):
             
             print(f"Downloading genome from: {fasta_url}")
             
-            # 2. Download the file
+            # 2. Download the file with retries
             # We use urllib because Entrez efetch doesn't support large binary assembly downloads well
-            urllib.request.urlretrieve(fasta_url, fasta_filename)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    urllib.request.urlretrieve(fasta_url, fasta_filename)
+                    break # Success!
+                except Exception as download_error:
+                    if attempt == max_retries - 1:
+                        raise download_error
+                    print(f"Download incomplete, retrying ({attempt + 1}/{max_retries})...")
+                    time.sleep(2)  # Wait a bit before retrying
             
             # 3. Unzip the file
             print(f"Unzipping to {output_filename}...")
