@@ -71,7 +71,7 @@ def download_assembly_sequences(accession_list):
             # 3. Unzip the file
             print(f"Unzipping to {output_filename}...")
             with gzip.open(fasta_filename, 'rb') as f_in:
-                with open(output_filename, 'wb') as f_out:
+                with open(f'data/fasta_files/{output_filename}', 'wb') as f_out: #TODO check this line
                     shutil.copyfileobj(f_in, f_out)
             
             # Cleanup: remove the .gz file

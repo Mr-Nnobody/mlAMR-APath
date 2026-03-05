@@ -1,0 +1,25 @@
+import os
+import time
+import requests
+
+def download_bvbrc_genomes(genome_ids):
+    os.makedirs('data/fasta_files', exist_ok=True)
+    
+    for gid in genome_ids:
+        print(f"Downloading Genome ID: {gid}...")
+        url = f"https://www.bv-brc.org/api/genome_sequence/?eq(genome_id,{gid})&http_accept=application/dna+fasta"
+        
+        response = requests.get(url)
+        if response.status_code == 200 and len(response.text) > 100:
+            with open(f"data/fasta_files/{gid}.fasta", "w") as f:
+                f.write(response.text)
+            print(f"Success: {gid}.fasta")
+        else:
+            print(f"Failed to find sequence for {gid}")
+        
+        time.sleep(0.5) # respect the API
+
+# Example testing with a Genome ID you know doesn't have an NCBI Assembly
+with open("data/genome_ids.txt", "r") as f:
+    genome_ids = [line.strip() for line in f]
+download_bvbrc_genomes(genome_ids)
