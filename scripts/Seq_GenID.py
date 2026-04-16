@@ -2,6 +2,7 @@ import os
 import time
 import requests
 
+
 def download_bvbrc_genomes(genome_ids):
     os.makedirs('data/fasta_files', exist_ok=True)
     
@@ -15,11 +16,15 @@ def download_bvbrc_genomes(genome_ids):
                 f.write(response.text)
             print(f"Success: {gid}.fasta")
         else:
+            # log failed genome IDs for review
+            with open("data/failed_genome_ids.txt", "a") as f:
+                    f.write(gid + "\n")
             print(f"Failed to find sequence for {gid}")
+        time.sleep(0.5) # respect the API 
         
-        time.sleep(0.5) # respect the API
 
 # Example testing with a Genome ID you know doesn't have an NCBI Assembly
 with open("data/genome_ids.txt", "r") as f:
     genome_ids = [line.strip() for line in f]
 download_bvbrc_genomes(genome_ids)
+print("Done downloading genomes from BV-BRC. Check data/fasta_files/ for results and data/failed_genome_ids.txt for any missing sequences.")
