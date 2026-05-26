@@ -1,0 +1,251 @@
+END-TO-END AMR K-MER PIPELINE (RESOURCE-CONSTRAINED, PUBLICATION-READY)
+
+This document describes a full, scientifically defensible pipeline for E. coli 10-mer
+AMR prediction using ~7,800 genomes. It is designed to work on limited RAM and disk,
+with emphasis on reproducibility and publishable methodology.
+
+Repository-specific paths referenced below:
+- Genome ID list: data/genome_ids.txt
+- FASTA files: data/fasta_files/{GenomeID}.fasta
+- KMC dumps (current scripts): output/counted_kmers/{GenomeID}_db_kmers.txt
+- Long k-mer file: kmer-data-long.csv (project root)
+- AMR labels: data/BVBRC_genome_amr.csv
+- Optional isolate metadata: data/isolates.csv
+- Sparse matrix outputs: kmer_matrix_sparse.npz, kmer_matrix_genome_index.csv,
+  kmer_matrix_kmer_index.csv
+
+Current scripts in this repo:
+- scripts/count_kmer.py (KMC counting per genome)
+- scripts/create_df.py (long format writer)
+- scripts/wide_format_sparse.py (sparse matrix builder)
+- scripts/train_sparse_dimred.py (baseline model training)
+
+--------------------------------------------------------------------------
+1) DATA INGESTION AND QC
+--------------------------------------------------------------------------
+Goal: build a clean, traceable dataset before k-mer counting.
+
+Steps:
+- Ensure consistent identifiers across genome FASTA files and phenotype records
+  (data/genome_ids.txt, data/fasta_files, data/BVBRC_genome_amr.csv).
+- Remove duplicate genomes, and track all exclusions in a QC log.
+- Verify that each GenomeID has a FASTA, phenotype, and (if needed) metadata.
+
+Rationale:
+- Label noise and ID mismatches are a common source of spurious AMR signals.
+- QC logs are required for scientific transparency and reproducibility.
+
+Resource-friendly practices:
+- Keep QC checks as streaming operations (line-by-line, chunked CSV reads).
+- Store only cleaned IDs and minimal metadata (avoid loading everything at once).
+
+--------------------------------------------------------------------------
+2) K-MER COUNTING (PER-GENOME DUMPS)
+--------------------------------------------------------------------------
+Goal: count 10-mers per genome without building a massive in-memory table.
+
+Steps:
+- Use scripts/count_kmer.py to run KMC on each genome.
+- Save per-genome dumps in output/counted_kmers/{GenomeID}_db_kmers.txt.
+- Log missing or failed genomes to data/kmer_not_counted.txt.
+
+Rationale:
+- Per-genome counting reduces peak memory and enables incremental processing.
+- KMC uses disk for spillover and is proven at large scale.
+
+Resource-friendly practices:
+- Limit threads and RAM flags in KMC to avoid crashing on smaller machines.
+- Clean temporary databases immediately after dump.
+
+--------------------------------------------------------------------------
+3) LONG FORMAT STORAGE (OPTIONAL BUT RECOMMENDED)
+--------------------------------------------------------------------------
+Goal: create a durable, queryable format for building vocab and sparse matrices.
+
+Steps:
+- Stream k-mer dumps into a long table: GenomeID, kmer, count.
+- Current script: scripts/create_df.py writes kmer-data-long.csv.
+- Store as Parquet (preferred) or CSV (fallback).
+- Keep consistent column types (string, string, int).
+
+Rationale:
+- Long format preserves full information and supports multiple downstream analyses.
+- Parquet compresses repeated strings (GenomeID, kmer) efficiently and supports
+  chunked reads.
+
+Resource-friendly practices:
+- Write in chunks and avoid building a single DataFrame in memory.
+- Partition Parquet by GenomeID for easy partial reads.
+
+--------------------------------------------------------------------------
+4) FEATURE SELECTION (SCIENTIFICALLY DEFENSIBLE)
+--------------------------------------------------------------------------
+Goal: reduce dimensionality while preserving biologically meaningful signals.
+
+Recommended steps:
+A) Prevalence filter
+- Keep k-mers present in >= 1% of genomes (>= 78 genomes).
+- Remove k-mers present in >98-99% of genomes (core genome background).
+
+B) Association filter
+- Rank k-mers by chi-square or mutual information against the binary phenotype.
+- Keep top N (e.g., 50k to 200k) for a publishable baseline.
+
+C) Optional stability selection
+- Use L1 logistic regression across bootstraps; keep features selected often.
+
+Rationale:
+- Rare k-mers are often sequencing artifacts or private variants.
+- Near-constant k-mers do not discriminate phenotypes.
+- Association-based filtering targets resistance-linked signals, not noise.
+
+Resource-friendly practices:
+- Compute prevalence in a streaming pass over dumps or long Parquet.
+- Use sparse matrices and avoid dense operations.
+
+--------------------------------------------------------------------------
+5) BUILD SPARSE MATRIX (MODEL-READY)
+--------------------------------------------------------------------------
+Goal: create a sparse Genome x Kmer matrix for modeling.
+
+Steps:
+- Build a k-mer vocabulary from selected features.
+- Map each genome to a row index and each k-mer to a column index.
+- Stream long data and fill a COO matrix, then convert to CSR.
+- Run scripts/wide_format_sparse.py to generate:
+  - kmer_matrix_sparse.npz
+  - kmer_matrix_genome_index.csv
+  - kmer_matrix_kmer_index.csv
+
+Rationale:
+- Sparse matrices preserve the true sparsity pattern of k-mer data.
+- CSR is efficient for training many scikit-learn models.
+
+Resource-friendly practices:
+- Build vocab and matrix in multiple passes (streamed chunks).
+- Avoid pandas pivot tables (they are dense and memory-heavy).
+
+--------------------------------------------------------------------------
+6) PHENOTYPE LABEL HANDLING (BINARY AMR)
+--------------------------------------------------------------------------
+Goal: define a clear binary target that is defensible.
+
+Options:
+- Treat Intermediate as Resistant (clinically conservative, often used).
+- Exclude Intermediate (cleaner separation, reduces label noise).
+
+Rationale:
+- "Intermediate" is heterogeneous and can obscure signal, but it can also
+  represent partial resistance. Both choices are acceptable if justified.
+
+--------------------------------------------------------------------------
+7) MODELING (RESOURCE-CONSTRAINED, PUBLISHABLE)
+--------------------------------------------------------------------------
+Goal: train strong baseline models without large memory requirements.
+
+Recommended baseline models:
+- Logistic Regression (saga) on sparse inputs (strong, interpretable).
+- Linear SVM (hinge loss) for high-dimensional sparse features.
+- Gradient boosting on dense projections (after TruncatedSVD).
+
+Recommended pipeline:
+- MaxAbsScaler (sparse-safe)
+- SelectKBest(chi2) or pre-filtered k-mer vocab
+- TruncatedSVD (sparse PCA alternative, optional)
+- Logistic Regression (saga)
+
+Repo alignment:
+- scripts/train_sparse_dimred.py currently uses data/BVBRC_genome_amr.csv and a
+  multi-class mapping. For binary AMR, update the label mapping or collapse
+  Intermediate into Resistant (or drop Intermediate) consistently.
+
+Rationale:
+- Linear models handle high-D k-mer data well and are standard in AMR literature.
+- TruncatedSVD provides compact embeddings without densifying raw data.
+
+Resource-friendly practices:
+- Limit top-k features and SVD components (start 50k, 200-300 comps).
+- Use stratified train/test split and avoid cross-validation at first.
+
+--------------------------------------------------------------------------
+8) EVALUATION AND REPORTING
+--------------------------------------------------------------------------
+Goal: produce results that meet publication standards.
+
+Minimum reporting:
+- Balanced accuracy, macro-F1, PR-AUC
+- Class counts and label handling decisions
+- Exact feature-selection thresholds and N
+
+Better if possible:
+- External validation or lineage-aware split (prevents clonal overfitting)
+- Model calibration and error analysis
+
+--------------------------------------------------------------------------
+9) OUTPUTS TO SAVE (FOR REPRODUCIBILITY)
+--------------------------------------------------------------------------
+- QC logs (missing genomes, failed k-mer counts)
+- Long data file (Parquet or CSV)
+- k-mer vocabulary and indices
+- Sparse matrix and genome index
+- Model config and evaluation metrics
+- Predictions with GenomeID for traceability
+
+Recommended concrete outputs (this repo):
+- data/kmer_not_counted.txt
+- kmer-data-long.csv (or Parquet)
+- kmer_matrix_sparse.npz
+- kmer_matrix_genome_index.csv
+- kmer_matrix_kmer_index.csv
+- output/predictions_{antibiotic}.csv
+
+--------------------------------------------------------------------------
+10) ALTERNATIVE LOW-RESOURCE METHODS (WHEN RAM IS VERY LIMITED)
+--------------------------------------------------------------------------
+If memory is tight (<16 GB), use these alternatives:
+
+A) Hashing vectorizer on k-mer strings
+- Map k-mers into a fixed-size hashed feature space.
+- Pros: no explicit vocab in memory.
+- Cons: collisions reduce interpretability.
+
+B) Subsampling k-mers per genome
+- Keep a random subset of k-mers per genome.
+- Pros: reduces matrix size drastically.
+- Cons: loses some signal; use for quick experiments only.
+
+C) On-the-fly feature selection
+- Maintain top-k k-mers by prevalence/association in a rolling fashion.
+- Pros: avoids full vocabulary in memory.
+- Cons: more complex; needs careful bookkeeping.
+
+--------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------
+This pipeline is designed to be both scientifically credible and feasible on
+resource-constrained machines. It uses reproducible selection criteria, sparse
+representations, and established modeling baselines suitable for publication.
+
+--------------------------------------------------------------------------
+RUN ORDER (AS IMPLEMENTED IN THIS REPO)
+--------------------------------------------------------------------------
+1) Count k-mers per genome
+  - scripts/count_kmer.py
+  - Input: data/genome_ids.txt, data/fasta_files/*.fasta
+  - Output: output/counted_kmers/{GenomeID}_db_kmers.txt
+
+2) Build long format
+  - scripts/create_df.py
+  - Input: output/counted_kmers/*.txt
+  - Output: kmer-data-long.csv
+
+3) Build sparse matrix
+  - scripts/wide_format_sparse.py
+  - Input: kmer-data-long.csv
+  - Output: kmer_matrix_sparse.npz + index CSVs
+
+4) Train baseline model (per antibiotic)
+  - scripts/train_sparse_dimred.py --antibiotic <name>
+  - Input: kmer_matrix_sparse.npz, kmer_matrix_genome_index.csv,
+    data/BVBRC_genome_amr.csv
+  - Output: output/predictions_<antibiotic>.csv

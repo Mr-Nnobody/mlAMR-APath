@@ -22,7 +22,7 @@ from scipy.sparse import coo_matrix, save_npz
 
 def build_kmer_vocab(
     long_csv_path: Path,
-    min_genome_freq: int = 5,
+    min_genome_freq: int = 1,
     top_k: int | None = None,
     chunksize: int = 1_000_000,
 ) -> dict:

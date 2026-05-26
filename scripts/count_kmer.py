@@ -66,7 +66,7 @@ with open ('data/genome_ids.txt', 'r') as f:
 rows = []
 for gid in genome_ids:
     try:
-       count_kmers(f"data/fasta_files/{gid}.fasta", f"output/{gid}_db")
+       count_kmers(f"data/fasta_files/{gid}.fasta", f"output/counted_kmers/{gid}_db")
        
         
     except Exception as e:
