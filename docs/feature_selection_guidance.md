@@ -25,6 +25,9 @@ Pick one and document it. For model comparisons, test both strategies if time al
 - With 7,800 genomes, 1% corresponds to about 78 genomes.
 - Rationale: extremely rare k-mers are more likely to be sequencing/assembly artifacts orprivate variants that do not generalize. Removing them reduces noise and improves reproducibility across cohorts.
 
+min_frac: minimum fraction of genomes that must contain a k‑mer to keep it.
+If a k‑mer is too rare (only in a handful of genomes), it’s often noise or too specific to be useful.
+
 Optional: evaluate 0.5% and 2% as sensitivity analyses.
 
 ## 3) Upper prevalence filter (remove nearly fixed k-mers)
@@ -34,6 +37,9 @@ Optional: evaluate 0.5% and 2% as sensitivity analyses.
 - With 7,800 genomes, 98% corresponds to about 7,644 genomes.
 - Rationale: near-constant k-mers represent core-genome background and add little to
   discrimination between resistant and susceptible phenotypes.
+
+max_frac: maximum fraction of genomes that may contain a k‑mer to keep it.
+If a k‑mer is in almost every genome, it carries little discriminative signal (it’s nearly constant)'
 
 ## 4) Association-based selection (label-linked signal)
 
