@@ -2,14 +2,15 @@
 import shutil
 from pathlib import Path
 
-source_dir = Path('../data/counted_kmers')
-export_dir = Path('../data/export_kaggle_colab/counted_kmers_1000')
+# change the path depending on which samples you are compiling
+source_dir = Path('data/counted_kmers')
+export_dir = Path('D:/MSc/Thesis/compressed_kmers')
 export_dir.mkdir(parents=True, exist_ok=True)
 
 if 'sampled_ids' not in globals() or not sampled_ids:
-    sampled_ids_path = Path('../data/phenotype/ampicillin_1000_ids.txt')
+    sampled_ids_path = Path('data/sampled_data/trimethoprim_sulfamethoxazole_2908_ids.txt')
     if not sampled_ids_path.exists():
-        raise FileNotFoundError('sampled_ids not found in memory and IDs file is missing: ../data/phenotype/ampicillin_1000_ids.txt')
+        raise FileNotFoundError(f'sampled_ids not found in memory and IDs file is missing: {sampled_ids_path}')
     sampled_ids = [line.strip() for line in sampled_ids_path.read_text(encoding='utf8').splitlines() if line.strip()]
 
 copied = 0
@@ -28,7 +29,8 @@ if missing:
     print(f'Missing files: {len(missing)}')
     print('First few missing GenomeIDs:', missing[:10])
 
-# Optional: create a single zip file for easy upload
-zip_base = export_dir.parent / 'counted_kmers_1000'
+# # Optional: create a single zip file for easy upload
+# zip_base = export_dir.parent
+zip_base = 'D:/MSc/Thesis/trimethoprim_sulfamethoxazole_2908'
 zip_path = shutil.make_archive(str(zip_base), 'zip', root_dir=export_dir)
 print(f'Created zip: {zip_path}')
