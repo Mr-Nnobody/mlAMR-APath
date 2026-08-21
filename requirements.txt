@@ -8,3 +8,5 @@ notebook>=6.5
 papermill>=2.4
 tqdm>=4.65
 python-dotenv>=0.21
+
+Download NCBI Blast+

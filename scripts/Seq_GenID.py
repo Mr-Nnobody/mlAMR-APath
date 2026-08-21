@@ -26,6 +26,6 @@ def download_bvbrc_genomes(genome_ids):
 # Example testing with a Genome ID you know doesn't have an NCBI Assembly
 with open("data/genome_ids.txt", "r") as f:
     genome_ids = [line.strip() for line in f]
-gene= ['562.97996', '562.99422', '562.7338', '562.100175', '562.99496', '562.99937', '562.99739', '562.99389', '562.98309', '562.9977', '562.10006', '562.144216', '562.98868', '562.22727']
+gene= ['562.100264']  # update with your specific genome IDs or read from a file
 download_bvbrc_genomes(gene)
 print("Done downloading genomes from BV-BRC. Check data/fasta_files/ for results and data/failed_genome_ids.txt for any missing sequences.")

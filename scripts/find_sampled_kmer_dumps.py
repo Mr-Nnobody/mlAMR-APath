@@ -8,7 +8,7 @@ export_dir = Path('D:/MSc/Thesis/compressed_kmers')
 export_dir.mkdir(parents=True, exist_ok=True)
 
 if 'sampled_ids' not in globals() or not sampled_ids:
-    sampled_ids_path = Path('data/sampled_data/trimethoprim_sulfamethoxazole_2908_ids.txt')
+    sampled_ids_path = Path('data/sampled_data/cefuroxime_1444_ids.txt')
     if not sampled_ids_path.exists():
         raise FileNotFoundError(f'sampled_ids not found in memory and IDs file is missing: {sampled_ids_path}')
     sampled_ids = [line.strip() for line in sampled_ids_path.read_text(encoding='utf8').splitlines() if line.strip()]
@@ -31,6 +31,6 @@ if missing:
 
 # # Optional: create a single zip file for easy upload
 # zip_base = export_dir.parent
-zip_base = 'D:/MSc/Thesis/trimethoprim_sulfamethoxazole_2908'
+zip_base = 'D:/MSc/Thesis/cefuroxime_1364'
 zip_path = shutil.make_archive(str(zip_base), 'zip', root_dir=export_dir)
 print(f'Created zip: {zip_path}')
