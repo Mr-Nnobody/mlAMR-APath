@@ -50,6 +50,7 @@ def main():
     project_root = os.path.abspath(os.curdir)
     card_db = os.path.join(project_root, "card_database", "card_db")
     ecoli_db = os.path.join(project_root, "ecoli_database", "ecoli_ref_db")
+    feature_dir = "output/feature_importances/piperacillin_tazobactam_feature_importance.txt"
     
     # Check that BLAST databases exist
     if not check_database_exists(card_db):
@@ -59,12 +60,26 @@ def main():
 
     # Input: You can pass an array of k-mers directly or read from your feature importance CSV
     # Example input array (Replace or load your model's actual top k-mers here):
-    kmers_input = [
-        {"Kmer": "GGGCACTCGA", "Importance": 0.245},
-        {"Kmer": "GAGATCCTAC", "Importance": 0.182},
-        {"Kmer": "CAAGTAGTTC", "Importance": 0.115},
-        {"Kmer": "CTTCTAGGCC", "Importance": 0.098}
-    ]
+   
+   # Initialize as an empty list to match your desired structure
+    kmers_input: list[dict[str, any]] = []
+
+    with open(feature_dir, "r", encoding="utf8", errors="ignore") as fh:
+        for line in fh:
+            parts = line.strip().split()
+            if len(parts) != 2:
+                continue
+            kmer, imp = parts
+            try:
+                # Create a dictionary for the current line and append it to the list
+                kmers_input.append({
+                    "Kmer": kmer, 
+                    "Importance": round(float(imp),2)  # Convert the string to a decimal float
+                })
+            except ValueError:
+                continue
+
+
     
     # If reading from a CSV file instead, uncomment the line below:
     # kmers_input = pd.read_csv("top_kmers.csv").to_dict('records')
@@ -138,7 +153,7 @@ def main():
 
         # Save ONLY the final clean CSV output file
         final_df = pd.DataFrame(results)
-        final_output_file = "kmer_biological_interpretation_results.csv"
+        final_output_file = "output/biological_annotations/piperacillin_tazobactam_kmer_biological_interpretation_results.csv"
         final_df.to_csv(final_output_file, index=False)
         print(f"[+] Complete! Only the final results file was saved: '{final_output_file}'")
 

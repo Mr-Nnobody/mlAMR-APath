@@ -1,0 +1,11 @@
+Kmer_Feature,Importance_Score,In_CARD,In_Ecoli_Genome,Mapped_Target,Biological_Category,Pipeline_Action
+CATACACTAA,2602.75,True,True,BMHC-1 [Riemerella anatipestifer],Known E. coli Resistance,Keep
+AGAATTTAGA,1221.85,True,True,Acla_ACT_CHL [Alkalihalobacillus clausii],Known E. coli Resistance,Keep
+ACGTCTAACA,1176.98,True,True,qacB [Staphylococcus aureus],Known E. coli Resistance,Keep
+AGTAGCCAAG,929.11,True,True,IMI-19 [Enterobacter cloacae],Known E. coli Resistance,Keep
+GTTGGAGTCA,921.33,True,True,MuxA [Pseudomonas aeruginosa PAO1],Known E. coli Resistance,Keep
+GGGCACTCGA,897.21,True,True,PJM-2 [Pseudoxanthomonas japonensis],Known E. coli Resistance,Keep
+CTTTGCAACA,758.22,True,True,IMP-99 [Pseudomonas aeruginosa],Known E. coli Resistance,Keep
+ATTCCACGTG,753.28,True,True,VEB-16 [Pseudomonas aeruginosa],Known E. coli Resistance,Keep
+CCACACGTGG,649.65,True,True,PAM-2 [Pseudomonas tohonis],Known E. coli Resistance,Keep
+AGCCCAAGTG,622.99,True,True,Sent_cmlA [Salmonella enterica subsp. enterica serovar Typhimurium],Known E. coli Resistance,Keep

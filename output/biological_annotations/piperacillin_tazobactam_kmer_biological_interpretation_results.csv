@@ -1,0 +1,11 @@
+Kmer_Feature,Importance_Score,In_CARD,In_Ecoli_Genome,Mapped_Target,Biological_Category,Pipeline_Action
+TCCCCTATCA,1226.61,True,True,dfrF [Enterococcus faecalis],Known E. coli Resistance,Keep
+CGCCGGCCGC,663.93,True,True,PEN-A5 [Burkholderia multivorans],Known E. coli Resistance,Keep
+CGCCGGCCGA,636.37,True,True,QepA4 [Escherichia coli],Known E. coli Resistance,Keep
+AAAGGAGCCC,574.51,True,True,floR [Escherichia coli],Known E. coli Resistance,Keep
+GCTGTCCAAA,569.46,True,True,"BlaB-6 [Bacteria, Viruses, Fungi, and other genome sequence associated with antimicrobial resistance]",Known E. coli Resistance,Keep
+CGCCGGCGCC,477.78,True,True,MexI [Pseudomonas aeruginosa PAO1],Known E. coli Resistance,Keep
+TAGGCCAAAA,417.52,True,True,SHD-1 [Shewanella denitrificans],Known E. coli Resistance,Keep
+AAGTTATGAG,355.96,True,True,"OXA-551 [Bacteria, Viruses, Fungi, and other genome sequence associated with antimicrobial resistance]",Known E. coli Resistance,Keep
+AAAGGAAAGG,349.15,True,True,OXY-10-1 [Klebsiella oxytoca],Known E. coli Resistance,Keep
+CACAGCCGGC,337.67,True,True,MuxC [Pseudomonas aeruginosa PAO1],Known E. coli Resistance,Keep

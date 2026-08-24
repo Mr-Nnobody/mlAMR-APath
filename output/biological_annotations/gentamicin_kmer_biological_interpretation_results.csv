@@ -1,0 +1,11 @@
+Kmer_Feature,Importance_Score,In_CARD,In_Ecoli_Genome,Mapped_Target,Biological_Category,Pipeline_Action
+ATAGGTCCTC,2262.12,True,True,norA [Staphylococcus epidermidis],Known E. coli Resistance,Keep
+CTCGTGGCTC,2021.36,True,True,Mrx [Aeromonas hydrophila],Known E. coli Resistance,Keep
+GTGGGACCGA,1861.78,True,True,oleI [Streptomyces antibioticus],Known E. coli Resistance,Keep
+AGGCGCCTTC,1366.19,True,True,"SGM-4 [Bacteria, Viruses, Fungi, and other genome sequence associated with antimicrobial resistance]",Known E. coli Resistance,Keep
+GAGGGCGCCA,1057.82,True,True,ACT-99 [Enterobacter cloacae],Known E. coli Resistance,Keep
+CCTTGGGGGA,1028.69,True,True,vanW_in_vanI_cl [Desulfitobacterium hafniense Y51],Known E. coli Resistance,Keep
+CTCTTGGAAG,1018.94,True,True,lsaB [Mammaliicoccus sciuri],Known E. coli Resistance,Keep
+GTCGCACTTA,813.38,True,True,OXA-1101 [Brachyspira pilosicoli],Known E. coli Resistance,Keep
+GGGGTCCGAC,670.54,True,True,tet(A) [Shigella sonnei],Known E. coli Resistance,Keep
+CTCCAACTTA,628.33,True,True,MCR-3.17 [Aeromonas],Known E. coli Resistance,Keep
